@@ -1,0 +1,103 @@
+import { cookies } from 'next/headers';
+import { getLesson } from '../../../lib/api';
+import AudioPlayer from '../../../components/AudioPlayer';
+import MiniTranslator from '../../../components/MiniTranslator';
+import Link from 'next/link';
+import { notFound } from 'next/navigation';
+
+const LEVEL_COLORS: Record<string, string> = {
+  A1: 'bg-green-100 text-green-700',
+  A2: 'bg-emerald-100 text-emerald-700',
+  B1: 'bg-blue-100 text-blue-700',
+  B2: 'bg-indigo-100 text-indigo-700',
+  C1: 'bg-purple-100 text-purple-700',
+  C2: 'bg-rose-100 text-rose-700',
+};
+
+export default async function LessonPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
+  const cookieStore = await cookies();
+  const jwt = cookieStore.get('jwt')?.value;
+
+  let lesson;
+  try {
+    lesson = await getLesson(id, jwt);
+  } catch {
+    notFound();
+  }
+
+  return (
+    <main className="max-w-5xl mx-auto px-4 py-10">
+      <Link href="/" className="text-blue-500 hover:underline text-sm mb-6 inline-block">
+        ← Voltar para lições
+      </Link>
+      {/* Cabeçalho da lição */}
+      <div className="mb-6">
+        <div className="flex items-center gap-3 flex-wrap mb-1">
+          <h1 className="text-2xl font-bold text-gray-900">{lesson.title}</h1>
+          {lesson.level && (
+            <span className={`text-sm font-semibold px-2.5 py-0.5 rounded-full ${LEVEL_COLORS[lesson.level] ?? 'bg-gray-100 text-gray-600'}`}>
+              {lesson.level}
+            </span>
+          )}
+        </div>
+        <p className="text-sm text-gray-400">
+          Criado em {new Date(lesson.createdAt).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}
+        </p>
+        <p className="mt-3 text-sm text-gray-600">
+          Leia a história enquanto ouve o áudio. Depois de compreender tudo com as traduções, tente escutar novamente mas sem olhar para o texto.
+          Algumas traduções podem não estar tão precisas. Use a tradução rápida para ajudar, mas tente entender o significado das palavras em francês antes de olhar a tradução.
+        </p>
+
+      </div>
+
+      {/* Palavras-tema */}
+      {lesson.themeWords?.length > 0 && (
+        <div className="mb-6">
+          <p className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-2">Palavras-tema</p>
+          <div className="flex flex-wrap gap-2">
+            {lesson.themeWords.map((word) => (
+              <span key={word} className="bg-blue-50 text-blue-700 text-sm px-3 py-1 rounded-full font-medium">
+                {word}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Conteúdo: story ou placeholder */}
+      {lesson.story ? (
+        <div className="flex gap-6 items-start">
+          <div className="flex-1 min-w-0">
+            <AudioPlayer
+              content={lesson.story.content}
+              words={lesson.story.words}
+              audioUrl={`${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') ?? 'http://localhost:3001'}${lesson.story.audioUrl}`}
+              lessonId={lesson.id}
+            />
+            {lesson.story.words.length > 0 && (
+              <p className="mt-4 text-xs text-gray-400 text-center">
+                Clique nas palavras destacadas para ver a tradução.
+              </p>
+            )}
+          </div>
+          <div className="w-85 flex-shrink-0">
+            <MiniTranslator />
+          </div>
+        </div>
+      ) : (
+        <div className="border border-dashed border-gray-200 rounded-2xl p-10 text-center text-gray-400 mt-4">
+          <p className="text-4xl mb-3">✨</p>
+          <p className="font-medium text-gray-500">História ainda não gerada</p>
+          <p className="text-sm mt-1">
+            Em breve a IA irá criar uma história com nível <strong>{lesson.level}</strong> usando as palavras-tema desta lição.
+          </p>
+        </div>
+      )}
+    </main>
+  );
+}
