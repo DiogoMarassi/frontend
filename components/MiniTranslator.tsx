@@ -2,6 +2,7 @@
 
 import { useState, useRef } from 'react';
 import { saveManualVocabulary } from '../lib/api';
+import { ArrowLeftRight, Check } from 'lucide-react';
 
 type Direction = 'fr-pt' | 'pt-fr';
 
@@ -10,7 +11,7 @@ const LANGS: Record<Direction, { from: string; to: string; fromCode: string; toC
   'pt-fr': { from: 'Português', to: 'Francês', fromCode: 'pt-BR', toCode: 'fr', placeholder: 'Digite em português...' },
 };
 
-export default function MiniTranslator() {
+export default function MiniTranslator({ lessonId }: { lessonId?: string } = {}) {
   const [direction, setDirection] = useState<Direction>('fr-pt');
   const [input, setInput] = useState('');
   const [result, setResult] = useState('');
@@ -59,7 +60,7 @@ export default function MiniTranslator() {
     setSaving(true);
     setSaveStatus('idle');
     try {
-      await saveManualVocabulary(manualFr.trim(), manualPt.trim());
+      await saveManualVocabulary(manualFr.trim(), manualPt.trim(), lessonId);
       setSaveStatus('ok');
       setManualFr('');
       setManualPt('');
@@ -83,10 +84,10 @@ export default function MiniTranslator() {
         <div className="flex-1 px-4 py-2 text-xs font-semibold text-blue-600">{lang.from}</div>
         <button
           onClick={swap}
-          className="px-3 py-2 text-gray-400 hover:text-gray-700 transition text-base"
+          className="px-3 py-2 text-gray-400 hover:text-gray-700 transition"
           title="Inverter idiomas"
         >
-          ⇄
+          <ArrowLeftRight className="w-4 h-4" />
         </button>
         <div className="flex-1 px-4 py-2 text-xs font-semibold text-gray-500 text-right">{lang.to}</div>
       </div>
@@ -139,7 +140,7 @@ export default function MiniTranslator() {
               : 'bg-blue-600 text-white hover:bg-blue-700'
           }`}
         >
-          {saveStatus === 'ok' ? '✓ Adicionada!' : saveStatus === 'err' ? 'Erro ao salvar' : saving ? '...' : 'Adicionar'}
+          {saveStatus === 'ok' ? <span className="flex items-center justify-center gap-1"><Check className="w-3.5 h-3.5" /> Adicionada!</span> : saveStatus === 'err' ? 'Erro ao salvar' : saving ? '...' : 'Adicionar'}
         </button>
       </div>
 

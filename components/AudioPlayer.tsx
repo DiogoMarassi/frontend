@@ -3,24 +3,23 @@
 import { useState, useRef, useEffect } from 'react';
 import { completeLesson, Word } from '../lib/api';
 import { getUser } from '../lib/auth';
-import StreakBadge from './StreakBadge';
 import StoryText from './StoryText';
+import { Play, Pause } from 'lucide-react';
 
 interface AudioPlayerProps {
   audioUrl: string;
   content: string;
   words: Word[];
   lessonId: string;
+  savedWordIds?: string[];
 }
 
-export default function AudioPlayer({ audioUrl, content, words, lessonId }: AudioPlayerProps) {
+export default function AudioPlayer({ audioUrl, content, words, lessonId, savedWordIds }: AudioPlayerProps) {
   const audioRef = useRef<HTMLAudioElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
-  const [streak, setStreak] = useState<{ currentStreak: number; highestStreak: number } | null>(
-    null,
-  );
+  const [streak, setStreak] = useState<{ currentStreak: number; highestStreak: number } | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -37,9 +36,7 @@ export default function AudioPlayer({ audioUrl, content, words, lessonId }: Audi
     if (currentTime >= duration && duration > 0 && !streak) {
       setIsPlaying(false);
       if (userId) {
-        completeLesson(userId, lessonId)
-          .then(setStreak)
-          .catch(console.error);
+        completeLesson(userId, lessonId).then(setStreak).catch(console.error);
       }
     }
   };
@@ -62,30 +59,30 @@ export default function AudioPlayer({ audioUrl, content, words, lessonId }: Audi
   };
 
   return (
-    <div className="max-w-2xl mx-auto p-6 bg-white rounded-xl shadow-md mt-0">
-      <div className="mb-8">
-        <h2 className="text-2xl font-bold mb-4 text-gray-800">História do Dia</h2>
-        <StoryText content={content} words={words} lessonId={lessonId} />
+    <>
+      {/* Conteúdo da história — fluxo normal */}
+      <div className="pb-28">
+        {!userId && (
+          <p className="mb-4 text-sm text-gray-400 text-center">
+            <a href="/login" className="text-blue-500 hover:underline">Entre</a> para salvar seu progresso.
+          </p>
+        )}
+        <StoryText content={content} words={words} lessonId={lessonId} initialSaved={savedWordIds} />
       </div>
 
-      {!userId && (
-        <p className="mb-4 text-sm text-gray-400 text-center">
-          <a href="/login" className="text-blue-500 hover:underline">Entre</a> para salvar seu progresso.
-        </p>
-      )}
-
+      {/* Player fixo no centro inferior */}
       <audio ref={audioRef} src={audioUrl} onTimeUpdate={handleTimeUpdate} />
 
-      <div className="bg-gray-100 p-4 rounded-lg flex items-center gap-4">
+      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 flex items-center gap-4 bg-white border border-gray-200 shadow-xl rounded-2xl px-5 py-3 w-[min(520px,90vw)]">
         <button
           onClick={togglePlay}
-          className="bg-blue-600 text-white w-12 h-12 rounded-full flex items-center justify-center hover:bg-blue-700 transition flex-shrink-0"
+          className="bg-blue-600 text-white w-10 h-10 rounded-full flex items-center justify-center hover:bg-blue-700 transition flex-shrink-0 text-sm"
         >
-          {isPlaying ? '⏸' : '▶'}
+          {isPlaying ? <Pause className="w-4 h-4 fill-current" /> : <Play className="w-4 h-4 fill-current" />}
         </button>
 
         <div
-          className="flex-1 h-4 bg-gray-300 rounded-full cursor-pointer overflow-hidden"
+          className="flex-1 h-3 bg-gray-200 rounded-full cursor-pointer overflow-hidden"
           onClick={handleProgressClick}
         >
           <div
@@ -94,10 +91,10 @@ export default function AudioPlayer({ audioUrl, content, words, lessonId }: Audi
           />
         </div>
 
-        <div className="text-sm font-medium text-gray-500 w-12 text-right flex-shrink-0">
+        <span className="text-xs font-medium text-gray-400 w-10 text-right flex-shrink-0">
           {Math.floor(currentTime)}s
-        </div>
+        </span>
       </div>
-    </div>
+    </>
   );
 }

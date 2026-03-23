@@ -4,6 +4,8 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { deleteLesson } from '../lib/api';
+import { ChevronRight, LayoutGrid, X } from 'lucide-react';
+import { useConfirm } from '../hooks/useConfirm';
 
 interface LessonCardProps {
   id: string;
@@ -49,10 +51,12 @@ function CardStatusDot({ stats }: { stats?: { total: number; learned: number } }
 export default function LessonCard({ id, title, level, createdAt, cardStats }: LessonCardProps) {
   const router = useRouter();
   const [deleting, setDeleting] = useState(false);
+  const { confirm, ConfirmDialog } = useConfirm();
 
   async function handleDelete(e: React.MouseEvent) {
     e.preventDefault();
-    if (!confirm(`Remover a lição "${title}"?`)) return;
+    const ok = await confirm({ message: `Remover a lição "${title}"?`, confirmLabel: 'Remover' });
+    if (!ok) return;
     setDeleting(true);
     try {
       await deleteLesson(id);
@@ -66,6 +70,8 @@ export default function LessonCard({ id, title, level, createdAt, cardStats }: L
   const dateBadge = getDateBadge(createdAt);
 
   return (
+    <>
+    {ConfirmDialog}
     <div className="relative group flex gap-2">
       {dateBadge && (
         <div className={`flex items-center justify-center border rounded-xl shadow-sm text-xs font-semibold w-[90px] flex-shrink-0 text-center leading-tight px-2 ${dateBadge.style}`}>
@@ -100,7 +106,7 @@ export default function LessonCard({ id, title, level, createdAt, cardStats }: L
                 </p>
               </div>
             </div>
-            <span className="text-gray-300 text-xl flex-shrink-0">›</span>
+            <ChevronRight className="w-5 h-5 text-gray-300 flex-shrink-0" />
           </div>
         </div>
       </Link>
@@ -109,7 +115,7 @@ export default function LessonCard({ id, title, level, createdAt, cardStats }: L
         href={`/lesson/${id}/cards`}
         className="flex flex-col items-center justify-center gap-1 px-4 bg-white border border-gray-100 rounded-xl shadow-sm hover:shadow-md hover:border-blue-200 hover:bg-blue-50 transition text-gray-500 hover:text-blue-600 min-w-[70px]"
       >
-        <span className="text-xl">🃏</span>
+        <LayoutGrid className="w-5 h-5" />
         <span className="text-xs font-medium">Cards</span>
       </Link>
 
@@ -119,8 +125,9 @@ export default function LessonCard({ id, title, level, createdAt, cardStats }: L
         className="absolute -right-2 -top-2 opacity-0 group-hover:opacity-100 transition p-1 rounded-full bg-white border border-gray-100 text-gray-300 hover:text-red-500 hover:border-red-200 shadow-sm disabled:opacity-40"
         title="Remover lição"
       >
-        {deleting ? '·' : '×'}
+        {deleting ? <span className="w-4 h-4 block" /> : <X className="w-3.5 h-3.5" />}
       </button>
     </div>
+    </>
   );
 }

@@ -4,6 +4,7 @@ import { useState, useMemo } from 'react';
 import { type Lesson } from '../lib/api';
 import LessonCard from './LessonCard';
 import CreateLessonButton from './CreateLessonButton';
+import { BookOpen } from 'lucide-react';
 
 const LEVEL_ORDER: Record<string, number> = { A1: 0, A2: 1, B1: 2, B2: 3, C1: 4, C2: 5 };
 
@@ -74,7 +75,7 @@ export default function LessonList({ lessons }: { lessons: Lesson[] }) {
 
         {lessons.length === 0 && (
           <div className="text-center py-20 text-gray-400">
-            <p className="text-5xl mb-4">📚</p>
+            <BookOpen className="w-12 h-12 mx-auto mb-4 text-gray-300" />
             <p className="font-medium text-gray-500">Nenhuma lição ainda.</p>
             <p className="text-sm mt-1">Clique em "Criar lição" para começar.</p>
           </div>

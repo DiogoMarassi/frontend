@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { getUser, removeUser, type AuthUser } from '../lib/auth';
 import { logout } from '../lib/api';
+import { User } from 'lucide-react';
 
 export default function Header() {
   const [user, setUser] = useState<AuthUser | null>(null);
@@ -50,15 +51,18 @@ export default function Header() {
                 Meu Vocabulário
               </Link>
               <Link
-                href="/profile"
-                className="flex items-center gap-1.5 text-sm text-gray-600 hover:text-blue-600 px-3 py-1.5 rounded-lg hover:bg-blue-50 transition"
+                href="/settings"
+                className="text-sm text-gray-500 hover:text-blue-600 px-3 py-1.5 rounded-lg hover:bg-blue-50 transition"
               >
-                <span className="text-base">👤</span>
-                <span className="font-medium">{user.name}</span>
+                Configurações
               </Link>
+              <span className="flex items-center gap-1.5 text-sm text-gray-600 px-3 py-1.5">
+                <User className="w-4 h-4" />
+                <span className="font-medium">{user.name}</span>
+              </span>
               <button
                 onClick={handleLogout}
-                className="text-sm text-gray-400 hover:text-red-500 px-3 py-1.5 rounded-lg hover:bg-red-50 transition"
+                className="text-sm text-gray-400 hover:text-red-500 px-3 py-1.5 rounded-lg hover:bg-red-50 transition cursor-pointer"
               >
                 Sair
               </button>

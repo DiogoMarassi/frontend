@@ -1,9 +1,10 @@
 import { cookies } from 'next/headers';
-import { getLesson } from '../../../lib/api';
+import { getLesson, getCards } from '../../../lib/api';
 import AudioPlayer from '../../../components/AudioPlayer';
 import MiniTranslator from '../../../components/MiniTranslator';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { ArrowLeft, Sparkles } from 'lucide-react';
 
 const LEVEL_COLORS: Record<string, string> = {
   A1: 'bg-green-100 text-green-700',
@@ -30,10 +31,16 @@ export default async function LessonPage({
     notFound();
   }
 
+  const cards = await getCards(id, jwt).catch(() => []);
+  const savedOriginals = new Set(cards.map((c) => c.original.toLowerCase()));
+  const savedWordIds = (lesson.story?.words ?? [])
+    .filter((w) => savedOriginals.has(w.original.toLowerCase()))
+    .map((w) => w.id);
+
   return (
     <main className="max-w-5xl mx-auto px-4 py-10">
-      <Link href="/" className="text-blue-500 hover:underline text-sm mb-6 inline-block">
-        ← Voltar para lições
+      <Link href="/" className="inline-flex items-center gap-1 text-blue-500 hover:underline text-sm mb-6">
+        <ArrowLeft className="w-4 h-4" /> Voltar para lições
       </Link>
       {/* Cabeçalho da lição */}
       <div className="mb-6">
@@ -78,6 +85,7 @@ export default async function LessonPage({
               words={lesson.story.words}
               audioUrl={`${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') ?? 'http://localhost:3001'}${lesson.story.audioUrl}`}
               lessonId={lesson.id}
+              savedWordIds={savedWordIds}
             />
             {lesson.story.words.length > 0 && (
               <p className="mt-4 text-xs text-gray-400 text-center">
@@ -86,12 +94,12 @@ export default async function LessonPage({
             )}
           </div>
           <div className="w-85 flex-shrink-0">
-            <MiniTranslator />
+            <MiniTranslator lessonId={lesson.id} />
           </div>
         </div>
       ) : (
         <div className="border border-dashed border-gray-200 rounded-2xl p-10 text-center text-gray-400 mt-4">
-          <p className="text-4xl mb-3">✨</p>
+          <Sparkles className="w-10 h-10 mx-auto mb-3 text-gray-300" />
           <p className="font-medium text-gray-500">História ainda não gerada</p>
           <p className="text-sm mt-1">
             Em breve a IA irá criar uma história com nível <strong>{lesson.level}</strong> usando as palavras-tema desta lição.

@@ -3,6 +3,7 @@ import { getAllCards } from '../../lib/api';
 import Link from 'next/link';
 import FlashCardGrid from '../../components/FlashCardGrid';
 import MiniTranslator from '../../components/MiniTranslator';
+import { ArrowLeft, LayoutGrid } from 'lucide-react';
 
 export default async function AllCardsPage() {
   const cookieStore = await cookies();
@@ -17,8 +18,8 @@ export default async function AllCardsPage() {
 
   return (
     <main className="max-w-4xl mx-auto px-4 py-10">
-      <Link href="/" className="text-blue-500 hover:underline text-sm mb-6 inline-block">
-        ← Voltar para lições
+      <Link href="/" className="inline-flex items-center gap-1 text-blue-500 hover:underline text-sm mb-6">
+        <ArrowLeft className="w-4 h-4" /> Voltar para lições
       </Link>
 
       <div className="mb-8">
@@ -29,7 +30,7 @@ export default async function AllCardsPage() {
 
       {cards.length === 0 ? (
         <div className="text-center py-20 text-gray-400">
-          <p className="text-5xl mb-4">🃏</p>
+          <LayoutGrid className="w-12 h-12 mx-auto mb-4 text-gray-300" />
           <p className="font-medium text-gray-500">Nenhum card ainda.</p>
           <p className="text-sm mt-1">Abra uma lição e clique em "Salvar" nas palavras destacadas.</p>
         </div>

@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, KeyboardEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { createLesson, generateStory } from '../lib/api';
+import { Sparkles, Pencil, X } from 'lucide-react';
 
 const LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'] as const;
 
@@ -27,9 +28,12 @@ export default function CreateLessonModal({ onClose }: Props) {
   const [error, setError] = useState('');
 
   // Story generation state
+  const [provider, setProvider] = useState<'gemini' | 'ollama'>('gemini');
   const [storyContent, setStoryContent] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isWriting, setIsWriting] = useState(false);
+  const [writingDraft, setWritingDraft] = useState('');
 
   const router = useRouter();
   const titleRef = useRef<HTMLInputElement>(null);
@@ -73,7 +77,7 @@ export default function CreateLessonModal({ onClose }: Props) {
     setError('');
     setIsGenerating(true);
     try {
-      const content = await generateStory(level, themeWords);
+      const content = await generateStory(level, provider, { themeWords });
       setStoryContent(content);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao gerar história');
@@ -91,6 +95,7 @@ export default function CreateLessonModal({ onClose }: Props) {
         level,
         themeWords,
         storyContent: storyContent || undefined,
+        provider,
       });
       router.refresh();
       onClose();
@@ -114,7 +119,7 @@ export default function CreateLessonModal({ onClose }: Props) {
             <h2 className="text-lg font-semibold text-gray-900">Nova lição</h2>
             <p className="text-xs text-gray-400 mt-0.5">Preencha os dados e gere a história antes de salvar.</p>
           </div>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-2xl leading-none transition">×</button>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition"><X className="w-5 h-5" /></button>
         </div>
 
         <div className="px-6 py-5 flex flex-col gap-5 overflow-y-auto">
@@ -151,6 +156,27 @@ export default function CreateLessonModal({ onClose }: Props) {
             </select>
           </div>
 
+          {/* Modelo de IA */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Modelo de IA
+            </label>
+            <select
+              value={provider}
+              onChange={(e) => { setProvider(e.target.value as 'gemini' | 'ollama'); setStoryContent(''); }}
+              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition bg-white"
+            >
+              <option value="gemini">Gemini (API)</option>
+              <option value="ollama">Mistral Nemo (local)</option>
+            </select>
+            {provider === 'gemini' && (
+              <p className="mt-1.5 text-xs text-gray-400">
+                Certifique-se de ter configurado sua chave em{' '}
+                <a href="/settings" className="text-blue-500 hover:underline">Configurações</a>.
+              </p>
+            )}
+          </div>
+
           {/* Palavras-tema */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -169,9 +195,9 @@ export default function CreateLessonModal({ onClose }: Props) {
                   <button
                     type="button"
                     onClick={() => { removeWord(word); setStoryContent(''); }}
-                    className="text-blue-400 hover:text-blue-700 leading-none"
+                    className="text-blue-400 hover:text-blue-700"
                   >
-                    ×
+                    <X className="w-3 h-3" />
                   </button>
                 </span>
               ))}
@@ -189,17 +215,41 @@ export default function CreateLessonModal({ onClose }: Props) {
             <p className="text-xs text-gray-400 mt-1">Pressione Enter ou vírgula para adicionar cada palavra.</p>
           </div>
 
+          {/* Escrita manual */}
+          {isWriting && !storyContent && (
+            <div className="flex flex-col gap-2">
+              <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Escreva a história</label>
+              <textarea
+                rows={8}
+                value={writingDraft}
+                placeholder="Il était une fois..."
+                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-800 outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400 transition resize-none placeholder:text-gray-300"
+                onChange={(e) => setWritingDraft(e.target.value)}
+              />
+              <button
+                type="button"
+                onClick={() => setStoryContent(writingDraft)}
+                disabled={!writingDraft.trim()}
+                className="self-end px-4 py-2 rounded-xl bg-gray-800 text-white text-sm font-medium hover:bg-gray-900 transition disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                Confirmar história
+              </button>
+            </div>
+          )}
+
           {/* Story preview */}
           {storyContent && (
-            <div className="bg-blue-50 border border-blue-100 rounded-xl p-4">
+            <div className={`border rounded-xl p-4 ${isWriting ? 'bg-gray-50 border-gray-200' : 'bg-blue-50 border-blue-100'}`}>
               <div className="flex items-center justify-between mb-2">
-                <p className="text-xs font-semibold text-blue-600 uppercase tracking-wide">História gerada</p>
+                <p className={`text-xs font-semibold uppercase tracking-wide ${isWriting ? 'text-gray-500' : 'text-blue-600'}`}>
+                  {isWriting ? 'História escrita' : 'História gerada'}
+                </p>
                 <button
                   type="button"
-                  onClick={() => setStoryContent('')}
-                  className="text-xs text-blue-400 hover:text-blue-600"
+                  onClick={() => { setStoryContent(''); setWritingDraft(''); }}
+                  className={`text-xs transition ${isWriting ? 'text-gray-400 hover:text-gray-600' : 'text-blue-400 hover:text-blue-600'}`}
                 >
-                  Regenerar
+                  {isWriting ? 'Reescrever' : 'Regenerar'}
                 </button>
               </div>
               <p className="text-sm text-gray-800 whitespace-pre-wrap leading-relaxed">{storyContent}</p>
@@ -223,14 +273,24 @@ export default function CreateLessonModal({ onClose }: Props) {
             </button>
 
             {!storyContent ? (
-              <button
-                type="button"
-                onClick={handleGenerate}
-                disabled={isGenerating}
-                className="flex-1 py-2.5 rounded-xl bg-indigo-600 text-white text-sm font-medium hover:bg-indigo-700 transition disabled:opacity-60"
-              >
-                {isGenerating ? 'Gerando história...' : '✨ Gerar história'}
-              </button>
+              <>
+                <button
+                  type="button"
+                  onClick={handleGenerate}
+                  disabled={isGenerating || isWriting}
+                  className="flex-1 py-2.5 rounded-xl bg-indigo-600 text-white text-sm font-medium hover:bg-indigo-700 transition disabled:opacity-60"
+                >
+                  {isGenerating ? 'Gerando história...' : <span className="flex items-center justify-center gap-1.5"><Sparkles className="w-4 h-4" /> Gerar história</span>}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsWriting((w) => !w)}
+                  disabled={isGenerating}
+                  className={`flex-1 py-2.5 rounded-xl border text-sm font-medium transition disabled:opacity-60 ${isWriting ? 'border-gray-300 bg-gray-50 text-gray-700' : 'border-gray-200 text-gray-600 hover:bg-gray-50'}`}
+                >
+                  <span className="flex items-center justify-center gap-1.5"><Pencil className="w-4 h-4" /> {isWriting ? 'Cancelar escrita' : 'Escrever história'}</span>
+                </button>
+              </>
             ) : (
               <button
                 type="button"

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { markCardLearned, unmarkCardLearned, markCardLearnedGlobal, unmarkCardLearnedGlobal, type Card } from '../lib/api';
+import { Trophy, LayoutGrid, Check, Undo2, ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface Props {
   cards: Card[];
@@ -135,7 +136,9 @@ function CardQueue({
       ) : (
         <div className={`w-full h-52 rounded-2xl border-2 border-dashed flex flex-col items-center justify-center text-center px-6 ${side === 'learned' ? 'border-emerald-100 text-emerald-300' : 'border-gray-100 text-gray-300'
           }`}>
-          <p className="text-4xl mb-2">{side === 'learned' ? '🏆' : '🃏'}</p>
+          {side === 'learned'
+            ? <Trophy className="w-10 h-10 mb-2" />
+            : <LayoutGrid className="w-10 h-10 mb-2" />}
           <p className="text-sm font-medium">
             {side === 'learned' ? 'Nenhuma aprendida' : 'Nenhuma palavra aqui'}
           </p>
@@ -147,16 +150,16 @@ function CardQueue({
         <button
           onClick={() => setIndex((i) => Math.max(0, i - 1))}
           disabled={index === 0 || !current}
-          className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-500 hover:bg-gray-50 transition disabled:opacity-30 disabled:cursor-not-allowed"
+          className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-500 hover:bg-gray-50 transition disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-1"
         >
-          ← Anterior
+          <ChevronLeft className="w-4 h-4" /> Anterior
         </button>
         <button
           onClick={() => setIndex((i) => Math.min(total - 1, i + 1))}
           disabled={index >= total - 1 || !current}
-          className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-500 hover:bg-gray-50 transition disabled:opacity-30 disabled:cursor-not-allowed"
+          className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-500 hover:bg-gray-50 transition disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-1"
         >
-          Próxima →
+          Próxima <ChevronRight className="w-4 h-4" />
         </button>
       </div>
 
@@ -166,7 +169,7 @@ function CardQueue({
           disabled={!current || loading}
           className="w-full py-3 rounded-xl bg-emerald-600 text-white text-sm font-semibold hover:bg-emerald-700 transition disabled:opacity-40 disabled:cursor-not-allowed"
         >
-          {loading ? 'Salvando...' : '✓ Marcar como aprendida'}
+          {loading ? 'Salvando...' : <span className="flex items-center justify-center gap-1.5 pl-3 pd-3"><Check className="w-4 h-4" /> Marcar como aprendida</span>}
         </button>
       )}
 
@@ -176,7 +179,7 @@ function CardQueue({
           disabled={!current || loading}
           className="w-full py-3 rounded-xl border p-5 border-gray-200 text-gray-500 text-sm font-medium hover:bg-gray-50 transition disabled:opacity-40 disabled:cursor-not-allowed"
         >
-          {loading ? '...' : '↩ Mover para não aprendidas'}
+          {loading ? '...' : <span className="flex items-center justify-center gap-1.5"><Undo2 className="w-4 h-4" /> Mover para não aprendidas</span>}
         </button>
       )}
     </div>

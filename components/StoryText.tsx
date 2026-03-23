@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { saveCard } from '../lib/api';
+import { Check } from 'lucide-react';
 
 interface Word {
   id: string;
@@ -13,6 +14,7 @@ interface Props {
   content: string;
   words: Word[];
   lessonId: string;
+  initialSaved?: string[];
 }
 
 type Segment = { type: 'text'; value: string } | { type: 'word'; value: string; word: Word };
@@ -34,10 +36,10 @@ function buildSegments(content: string, words: Word[]): Segment[] {
   });
 }
 
-export default function StoryText({ content, words, lessonId }: Props) {
+export default function StoryText({ content, words, lessonId, initialSaved = [] }: Props) {
   const [activeWord, setActiveWord] = useState<Word | null>(null);
   const [tooltipPos, setTooltipPos] = useState<{ top: number; left: number } | null>(null);
-  const [saved, setSaved] = useState<Set<string>>(new Set());
+  const [saved, setSaved] = useState<Set<string>>(new Set(initialSaved));
   const [saving, setSaving] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -114,7 +116,7 @@ export default function StoryText({ content, words, lessonId }: Props) {
               }`}
             >
               {saved.has(activeWord.id) ? (
-                <>✓<br />Adicionado</>
+                <><Check className="w-4 h-4 mx-auto mb-0.5" />Adicionado</>
               ) : saving ? (
                 '...'
               ) : (

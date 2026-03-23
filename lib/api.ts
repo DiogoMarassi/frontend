@@ -76,12 +76,16 @@ export async function logout(): Promise<void> {
 
 // ── Lessons ─────────────────────────────────────────────
 
-export async function generateStory(level: string, themeWords: string[]): Promise<string> {
+export async function generateStory(
+  level: string,
+  provider: 'gemini' | 'ollama',
+  options: { themeWords?: string[]; vocabularyWords?: string[] },
+): Promise<string> {
   const res = await fetch(`${API_URL}/story/generate`, {
     ...defaults,
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ level, themeWords }),
+    body: JSON.stringify({ level, provider, ...options }),
   });
   if (!res.ok) throw new Error('Erro ao gerar história');
   const data = await res.json();
@@ -98,6 +102,7 @@ export async function createLesson(data: {
   level: string;
   themeWords: string[];
   storyContent?: string;
+  provider?: 'gemini' | 'ollama';
 }): Promise<Lesson> {
   const res = await fetch(`${API_URL}/lessons`, {
     ...defaults,
@@ -222,12 +227,12 @@ export async function deleteVocabularyWord(vocabularyId: string): Promise<void> 
   if (!res.ok) throw new Error('Erro ao remover palavra');
 }
 
-export async function saveManualVocabulary(original: string, translation: string): Promise<void> {
+export async function saveManualVocabulary(original: string, translation: string, lessonId?: string): Promise<void> {
   const res = await fetch(`${API_URL}/cards/manual`, {
     ...defaults,
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ original, translation }),
+    body: JSON.stringify({ original, translation, lessonId }),
   });
   if (!res.ok) throw new Error('Erro ao salvar palavra');
 }
@@ -246,6 +251,29 @@ export async function unmarkCardLearnedGlobal(id: string): Promise<void> {
     method: 'POST',
   });
   if (!res.ok) throw new Error('Erro ao desmarcar card');
+}
+
+// ── Profile ──────────────────────────────────────────────
+
+export async function getGeminiKeyStatus(): Promise<{ hasKey: boolean }> {
+  const res = await fetch(`${API_URL}/profile/gemini-key/status`, { ...defaults, cache: 'no-store' });
+  if (!res.ok) throw new Error('Erro ao verificar chave');
+  return res.json();
+}
+
+export async function saveGeminiKey(key: string): Promise<void> {
+  const res = await fetch(`${API_URL}/profile/gemini-key`, {
+    ...defaults,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ key }),
+  });
+  if (!res.ok) throw new Error('Erro ao salvar chave');
+}
+
+export async function deleteGeminiKey(): Promise<void> {
+  const res = await fetch(`${API_URL}/profile/gemini-key`, { ...defaults, method: 'DELETE' });
+  if (!res.ok) throw new Error('Erro ao remover chave');
 }
 
 // ── Users ────────────────────────────────────────────────
