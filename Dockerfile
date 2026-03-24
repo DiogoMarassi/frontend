@@ -5,7 +5,7 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci
 
-# ── Build stage ───────────────────────────────────────────────────────────────
+# ── Build stage ───────────────────────────────────────────────────────────────opa
 FROM node:22-alpine AS builder
 
 WORKDIR /app
