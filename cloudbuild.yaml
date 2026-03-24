@@ -1,0 +1,38 @@
+steps:
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - --tag
+      - $_AR_HOSTNAME/$_AR_PROJECT_ID/$_AR_REPOSITORY/$_SERVICE_NAME:$COMMIT_SHA
+      - --build-arg
+      - NEXT_PUBLIC_API_URL=$_NEXT_PUBLIC_API_URL
+      - .
+
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - push
+      - $_AR_HOSTNAME/$_AR_PROJECT_ID/$_AR_REPOSITORY/$_SERVICE_NAME:$COMMIT_SHA
+
+  - name: gcr.io/google.com/cloudsdktool/cloud-sdk
+    entrypoint: gcloud
+    args:
+      - run
+      - deploy
+      - $_SERVICE_NAME
+      - --image
+      - $_AR_HOSTNAME/$_AR_PROJECT_ID/$_AR_REPOSITORY/$_SERVICE_NAME:$COMMIT_SHA
+      - --region
+      - $_DEPLOY_REGION
+      - --platform
+      - managed
+
+substitutions:
+  _AR_HOSTNAME: northamerica-south1-docker.pkg.dev
+  _AR_PROJECT_ID: projeto-lingua
+  _AR_REPOSITORY: cloud-run-source-deploy
+  _SERVICE_NAME: frontend-lingua
+  _DEPLOY_REGION: northamerica-south1
+  _NEXT_PUBLIC_API_URL: https://backend-lingua-1097273527941.northamerica-south1.run.app/api
+
+images:
+  - $_AR_HOSTNAME/$_AR_PROJECT_ID/$_AR_REPOSITORY/$_SERVICE_NAME:$COMMIT_SHA
