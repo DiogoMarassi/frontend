@@ -25,6 +25,8 @@ steps:
       - $_DEPLOY_REGION
       - --platform
       - managed
+      - --set-env-vars
+      - NEXT_PUBLIC_API_URL=$_NEXT_PUBLIC_API_URL
 
 substitutions:
   _AR_HOSTNAME: northamerica-south1-docker.pkg.dev
