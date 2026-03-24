@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import { getCards, type UserCard } from '../../../../lib/api';
+import { getCards, type Card } from '../../../../lib/api';
 import Link from 'next/link';
 import FlashCardGrid from '../../../../components/FlashCardGrid';
 import MiniTranslator from '../../../../components/MiniTranslator';
@@ -11,7 +11,7 @@ import { ArrowLeft, LayoutGrid } from 'lucide-react';
 
 function CardsContent() {
   const { id } = useParams<{ id: string }>();
-  const [cards, setCards] = useState<UserCard[]>([]);
+  const [cards, setCards] = useState<Card[]>([]);
 
   useEffect(() => {
     getCards(id).then(setCards).catch(() => {});

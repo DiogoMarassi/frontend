@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { getAllCards, type UserCard } from '../../lib/api';
+import { getAllCards, type Card } from '../../lib/api';
 import Link from 'next/link';
 import FlashCardGrid from '../../components/FlashCardGrid';
 import MiniTranslator from '../../components/MiniTranslator';
@@ -9,7 +9,7 @@ import AuthGuard from '../../components/AuthGuard';
 import { ArrowLeft, LayoutGrid } from 'lucide-react';
 
 function AllCardsContent() {
-  const [cards, setCards] = useState<UserCard[]>([]);
+  const [cards, setCards] = useState<Card[]>([]);
 
   useEffect(() => {
     getAllCards().then(setCards).catch(() => {});

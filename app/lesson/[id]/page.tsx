@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import { getLesson, getCards, type Lesson, type UserCard } from '../../../lib/api';
+import { getLesson, getCards, type Lesson, type Card } from '../../../lib/api';
 import AudioPlayer from '../../../components/AudioPlayer';
 import MiniTranslator from '../../../components/MiniTranslator';
 import AuthGuard from '../../../components/AuthGuard';
@@ -21,7 +21,7 @@ const LEVEL_COLORS: Record<string, string> = {
 function LessonContent() {
   const { id } = useParams<{ id: string }>();
   const [lesson, setLesson] = useState<Lesson | null>(null);
-  const [cards, setCards] = useState<UserCard[]>([]);
+  const [cards, setCards] = useState<Card[]>([]);
 
   useEffect(() => {
     getLesson(id).then(setLesson).catch(() => {});
