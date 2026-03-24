@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Easy Langue",
+  title: "Lingua",
   description: "Aprenda idiomas com histórias e áudio.",
 };
 

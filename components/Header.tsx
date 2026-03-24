@@ -26,7 +26,7 @@ export default function Header() {
     <header className="bg-white border-b border-gray-100 sticky top-0 z-10">
       <div className="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
         <Link href="/" className="text-lg font-bold text-blue-600 tracking-tight">
-          Easy Langue
+          Lingua
         </Link>
 
         <div className="flex items-center gap-1">
