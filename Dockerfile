@@ -13,11 +13,7 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# NEXT_PUBLIC_API_URL é resolvida em build time — passe via --build-arg no Cloud Build.
-# Exemplo: --build-arg NEXT_PUBLIC_API_URL=https://backend-xxxx.run.app/api
-ARG NEXT_PUBLIC_API_URL
-ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
-
+# NEXT_PUBLIC_API_URL é lida do .env.production em build time pelo Next.js
 RUN npm run build
 
 # ── Production stage ──────────────────────────────────────────────────────────
@@ -31,9 +27,6 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
-
-ARG NEXT_PUBLIC_API_URL
-ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 
 # Copia apenas o necessário do build standalone (mínimo sem node_modules completo)
 COPY --from=builder /app/public ./public
