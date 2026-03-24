@@ -74,6 +74,12 @@ export async function logout(): Promise<void> {
   await fetch(`${API_URL}/auth/logout`, { ...defaults, method: 'POST' });
 }
 
+export async function getMe(): Promise<User> {
+  const res = await fetch(`${API_URL}/auth/me`, { ...defaults, cache: 'no-store' });
+  if (!res.ok) throw new Error('Não autenticado');
+  return res.json();
+}
+
 // ── Lessons ─────────────────────────────────────────────
 
 export async function generateStory(
