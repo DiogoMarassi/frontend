@@ -1,20 +1,19 @@
-import { cookies } from 'next/headers';
-import { getAllCards } from '../../lib/api';
+'use client';
+
+import { useEffect, useState } from 'react';
+import { getAllCards, type UserCard } from '../../lib/api';
 import Link from 'next/link';
 import FlashCardGrid from '../../components/FlashCardGrid';
 import MiniTranslator from '../../components/MiniTranslator';
+import AuthGuard from '../../components/AuthGuard';
 import { ArrowLeft, LayoutGrid } from 'lucide-react';
 
-export default async function AllCardsPage() {
-  const cookieStore = await cookies();
-  const jwt = cookieStore.get('jwt')?.value;
+function AllCardsContent() {
+  const [cards, setCards] = useState<UserCard[]>([]);
 
-  let cards: Awaited<ReturnType<typeof getAllCards>> = [];
-  try {
-    cards = await getAllCards(jwt);
-  } catch {
-    // backend offline
-  }
+  useEffect(() => {
+    getAllCards().then(setCards).catch(() => {});
+  }, []);
 
   return (
     <main className="max-w-4xl mx-auto px-4 py-10">
@@ -45,5 +44,13 @@ export default async function AllCardsPage() {
         </div>
       )}
     </main>
+  );
+}
+
+export default function AllCardsPage() {
+  return (
+    <AuthGuard>
+      <AllCardsContent />
+    </AuthGuard>
   );
 }

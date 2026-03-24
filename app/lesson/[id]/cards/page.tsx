@@ -1,21 +1,21 @@
-import { cookies } from 'next/headers';
-import { getCards } from '../../../../lib/api';
+'use client';
+
+import { useEffect, useState } from 'react';
+import { useParams } from 'next/navigation';
+import { getCards, type UserCard } from '../../../../lib/api';
 import Link from 'next/link';
 import FlashCardGrid from '../../../../components/FlashCardGrid';
 import MiniTranslator from '../../../../components/MiniTranslator';
+import AuthGuard from '../../../../components/AuthGuard';
 import { ArrowLeft, LayoutGrid } from 'lucide-react';
 
-export default async function CardsPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
-  const cookieStore = await cookies();
-  const jwt = cookieStore.get('jwt')?.value;
+function CardsContent() {
+  const { id } = useParams<{ id: string }>();
+  const [cards, setCards] = useState<UserCard[]>([]);
 
-  let cards: Awaited<ReturnType<typeof getCards>> = [];
-  try {
-    cards = await getCards(id, jwt);
-  } catch {
-    // backend offline
-  }
+  useEffect(() => {
+    getCards(id).then(setCards).catch(() => {});
+  }, [id]);
 
   return (
     <main className="max-w-4xl mx-auto px-4 py-10">
@@ -51,5 +51,13 @@ export default async function CardsPage({ params }: { params: Promise<{ id: stri
         </div>
       )}
     </main>
+  );
+}
+
+export default function CardsPage() {
+  return (
+    <AuthGuard>
+      <CardsContent />
+    </AuthGuard>
   );
 }

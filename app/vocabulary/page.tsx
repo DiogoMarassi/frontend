@@ -1,19 +1,20 @@
-import { cookies } from 'next/headers';
+'use client';
+
+import { useEffect, useState } from 'react';
 import { getVocabulary } from '../../lib/api';
 import Link from 'next/link';
 import VocabularyTable from '../../components/VocabularyTable';
+import AuthGuard from '../../components/AuthGuard';
 import { ArrowLeft, BookOpen } from 'lucide-react';
 
-export default async function VocabularyPage() {
-  const cookieStore = await cookies();
-  const jwt = cookieStore.get('jwt')?.value;
+type VocabularyEntry = Awaited<ReturnType<typeof getVocabulary>>[number];
 
-  let entries: Awaited<ReturnType<typeof getVocabulary>> = [];
-  try {
-    entries = await getVocabulary(jwt);
-  } catch {
-    // backend offline
-  }
+function VocabularyContent() {
+  const [entries, setEntries] = useState<VocabularyEntry[]>([]);
+
+  useEffect(() => {
+    getVocabulary().then(setEntries).catch(() => {});
+  }, []);
 
   return (
     <main className="max-w-4xl w-full mx-auto px-4 py-10">
@@ -37,5 +38,13 @@ export default async function VocabularyPage() {
         <VocabularyTable entries={entries} />
       )}
     </main>
+  );
+}
+
+export default function VocabularyPage() {
+  return (
+    <AuthGuard>
+      <VocabularyContent />
+    </AuthGuard>
   );
 }

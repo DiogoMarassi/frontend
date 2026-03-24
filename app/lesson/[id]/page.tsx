@@ -1,9 +1,12 @@
-import { cookies } from 'next/headers';
-import { getLesson, getCards } from '../../../lib/api';
+'use client';
+
+import { useEffect, useState } from 'react';
+import { useParams } from 'next/navigation';
+import { getLesson, getCards, type Lesson, type UserCard } from '../../../lib/api';
 import AudioPlayer from '../../../components/AudioPlayer';
 import MiniTranslator from '../../../components/MiniTranslator';
+import AuthGuard from '../../../components/AuthGuard';
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
 import { ArrowLeft, Sparkles } from 'lucide-react';
 
 const LEVEL_COLORS: Record<string, string> = {
@@ -15,23 +18,18 @@ const LEVEL_COLORS: Record<string, string> = {
   C2: 'bg-rose-100 text-rose-700',
 };
 
-export default async function LessonPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const { id } = await params;
-  const cookieStore = await cookies();
-  const jwt = cookieStore.get('jwt')?.value;
+function LessonContent() {
+  const { id } = useParams<{ id: string }>();
+  const [lesson, setLesson] = useState<Lesson | null>(null);
+  const [cards, setCards] = useState<UserCard[]>([]);
 
-  let lesson;
-  try {
-    lesson = await getLesson(id, jwt);
-  } catch {
-    notFound();
-  }
+  useEffect(() => {
+    getLesson(id).then(setLesson).catch(() => {});
+    getCards(id).then(setCards).catch(() => {});
+  }, [id]);
 
-  const cards = await getCards(id, jwt).catch(() => []);
+  if (!lesson) return null;
+
   const savedOriginals = new Set(cards.map((c) => c.original.toLowerCase()));
   const savedWordIds = (lesson.story?.words ?? [])
     .filter((w) => savedOriginals.has(w.original.toLowerCase()))
@@ -42,7 +40,6 @@ export default async function LessonPage({
       <Link href="/" className="inline-flex items-center gap-1 text-blue-500 hover:underline text-sm mb-6">
         <ArrowLeft className="w-4 h-4" /> Voltar para lições
       </Link>
-      {/* Cabeçalho da lição */}
       <div className="mb-6">
         <div className="flex items-center gap-3 flex-wrap mb-1">
           <h1 className="text-2xl font-bold text-gray-900">{lesson.title}</h1>
@@ -59,10 +56,8 @@ export default async function LessonPage({
           Leia a história enquanto ouve o áudio. Depois de compreender tudo com as traduções, tente escutar novamente mas sem olhar para o texto.
           Algumas traduções podem não estar tão precisas. Use a tradução rápida para ajudar, mas tente entender o significado das palavras em francês antes de olhar a tradução.
         </p>
-
       </div>
 
-      {/* Palavras-tema */}
       {lesson.themeWords?.length > 0 && (
         <div className="mb-6">
           <p className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-2">Palavras-tema</p>
@@ -76,7 +71,6 @@ export default async function LessonPage({
         </div>
       )}
 
-      {/* Conteúdo: story ou placeholder */}
       {lesson.story ? (
         <div className="flex gap-6 items-start">
           <div className="flex-1 min-w-0">
@@ -107,5 +101,13 @@ export default async function LessonPage({
         </div>
       )}
     </main>
+  );
+}
+
+export default function LessonPage() {
+  return (
+    <AuthGuard>
+      <LessonContent />
+    </AuthGuard>
   );
 }
