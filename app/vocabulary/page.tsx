@@ -5,16 +5,20 @@ import { getVocabulary } from '../../lib/api';
 import Link from 'next/link';
 import VocabularyTable from '../../components/VocabularyTable';
 import AuthGuard from '../../components/AuthGuard';
+import { VocabularyPageSkeleton } from '../../components/Skeleton';
 import { ArrowLeft, BookOpen } from 'lucide-react';
 
 type VocabularyEntry = Awaited<ReturnType<typeof getVocabulary>>[number];
 
 function VocabularyContent() {
   const [entries, setEntries] = useState<VocabularyEntry[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    getVocabulary().then(setEntries).catch(() => {});
+    getVocabulary().then(setEntries).catch(() => {}).finally(() => setLoading(false));
   }, []);
+
+  if (loading) return <VocabularyPageSkeleton />;
 
   return (
     <main className="max-w-4xl w-full mx-auto px-4 py-10">

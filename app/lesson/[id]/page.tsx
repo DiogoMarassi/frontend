@@ -6,6 +6,7 @@ import { getLesson, getCards, type Lesson, type Card } from '../../../lib/api';
 import AudioPlayer from '../../../components/AudioPlayer';
 import MiniTranslator from '../../../components/MiniTranslator';
 import AuthGuard from '../../../components/AuthGuard';
+import { LessonPageSkeleton } from '../../../components/Skeleton';
 import Link from 'next/link';
 import { ArrowLeft, Sparkles } from 'lucide-react';
 
@@ -22,12 +23,16 @@ function LessonContent() {
   const { id } = useParams<{ id: string }>();
   const [lesson, setLesson] = useState<Lesson | null>(null);
   const [cards, setCards] = useState<Card[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    getLesson(id).then(setLesson).catch(() => {});
-    getCards(id).then(setCards).catch(() => {});
+    Promise.all([
+      getLesson(id).then(setLesson).catch(() => {}),
+      getCards(id).then(setCards).catch(() => {}),
+    ]).finally(() => setLoading(false));
   }, [id]);
 
+  if (loading) return <LessonPageSkeleton />;
   if (!lesson) return null;
 
   const savedOriginals = new Set(cards.map((c) => c.original.toLowerCase()));

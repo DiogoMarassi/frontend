@@ -4,7 +4,7 @@ import { useState } from 'react';
 import CreateLessonModal from './CreateLessonModal';
 import { Plus } from 'lucide-react';
 
-export default function CreateLessonButton() {
+export default function CreateLessonButton({ onCreated }: { onCreated?: () => void }) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -17,7 +17,7 @@ export default function CreateLessonButton() {
         Criar lição
       </button>
 
-      {open && <CreateLessonModal onClose={() => setOpen(false)} />}
+      {open && <CreateLessonModal onClose={() => setOpen(false)} onCreated={onCreated} />}
     </>
   );
 }

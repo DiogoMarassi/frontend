@@ -6,14 +6,18 @@ import Link from 'next/link';
 import FlashCardGrid from '../../components/FlashCardGrid';
 import MiniTranslator from '../../components/MiniTranslator';
 import AuthGuard from '../../components/AuthGuard';
+import { CardsPageSkeleton } from '../../components/Skeleton';
 import { ArrowLeft, LayoutGrid } from 'lucide-react';
 
 function AllCardsContent() {
   const [cards, setCards] = useState<Card[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    getAllCards().then(setCards).catch(() => {});
+    getAllCards().then(setCards).catch(() => {}).finally(() => setLoading(false));
   }, []);
+
+  if (loading) return <CardsPageSkeleton />;
 
   return (
     <main className="max-w-4xl mx-auto px-4 py-10">

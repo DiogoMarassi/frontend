@@ -18,9 +18,10 @@ const LEVEL_LABELS: Record<string, string> = {
 
 interface Props {
   onClose: () => void;
+  onCreated?: () => void;
 }
 
-export default function CreateLessonModal({ onClose }: Props) {
+export default function CreateLessonModal({ onClose, onCreated }: Props) {
   const [title, setTitle] = useState('');
   const [level, setLevel] = useState<string>('A1');
   const [themeWords, setThemeWords] = useState<string[]>([]);
@@ -97,8 +98,8 @@ export default function CreateLessonModal({ onClose }: Props) {
         storyContent: storyContent || undefined,
         provider,
       });
-      router.refresh();
       onClose();
+      onCreated?.();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao criar lição');
     } finally {
