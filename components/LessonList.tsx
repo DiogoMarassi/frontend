@@ -11,7 +11,7 @@ const LEVEL_ORDER: Record<string, number> = { A1: 0, A2: 1, B1: 2, B2: 3, C1: 4,
 type SortBy = 'date' | 'level';
 type Direction = 'asc' | 'desc';
 
-export default function LessonList({ lessons, onCreated }: { lessons: Lesson[]; onCreated?: () => void }) {
+export default function LessonList({ lessons, onCreated, onDeleted }: { lessons: Lesson[]; onCreated?: () => void; onDeleted?: (id: string) => void }) {
   const [sortBy, setSortBy] = useState<SortBy>('date');
   const [direction, setDirection] = useState<Direction>('desc');
 
@@ -70,6 +70,7 @@ export default function LessonList({ lessons, onCreated }: { lessons: Lesson[]; 
             level={lesson.level}
             createdAt={lesson.createdAt}
             cardStats={lesson.cardStats}
+            onDeleted={onDeleted}
           />
         ))}
 

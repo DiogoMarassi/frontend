@@ -32,7 +32,11 @@ export default function LessonsPage() {
 
   return (
     <main className="max-w-2xl mx-auto px-4 py-10">
-      <LessonList lessons={lessons} onCreated={fetchLessons} />
+      <LessonList
+        lessons={lessons}
+        onCreated={fetchLessons}
+        onDeleted={(id) => setLessons((prev) => prev.filter((l) => l.id !== id))}
+      />
     </main>
   );
 }

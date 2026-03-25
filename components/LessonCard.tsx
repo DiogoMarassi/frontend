@@ -13,6 +13,7 @@ interface LessonCardProps {
   level: string | null;
   createdAt: string;
   cardStats?: { total: number; learned: number };
+  onDeleted?: (id: string) => void;
 }
 
 const LEVEL_COLORS: Record<string, string> = {
@@ -48,7 +49,7 @@ function CardStatusDot({ stats }: { stats?: { total: number; learned: number } }
   return <span className="w-2 h-2 rounded-full bg-blue-300 flex-shrink-0" title="Em andamento" />;
 }
 
-export default function LessonCard({ id, title, level, createdAt, cardStats }: LessonCardProps) {
+export default function LessonCard({ id, title, level, createdAt, cardStats, onDeleted }: LessonCardProps) {
   const router = useRouter();
   const [deleting, setDeleting] = useState(false);
   const { confirm, ConfirmDialog } = useConfirm();
@@ -60,7 +61,8 @@ export default function LessonCard({ id, title, level, createdAt, cardStats }: L
     setDeleting(true);
     try {
       await deleteLesson(id);
-      router.refresh();
+      if (onDeleted) onDeleted(id);
+      else router.refresh();
     } catch {
       alert('Erro ao remover lição.');
       setDeleting(false);
