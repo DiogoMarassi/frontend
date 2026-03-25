@@ -77,7 +77,7 @@ function LessonContent() {
             <AudioPlayer
               content={lesson.story.content}
               words={lesson.story.words}
-              audioUrl={`${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') ?? 'http://localhost:3001'}${lesson.story.audioUrl}`}
+              audioUrl={lesson.story.audioUrl.startsWith('http') ? lesson.story.audioUrl : `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') ?? 'http://localhost:3001'}${lesson.story.audioUrl}`}
               lessonId={lesson.id}
               savedWordIds={savedWordIds}
             />
