@@ -53,9 +53,11 @@ export default function AudioPlayer({ audioUrl, content, words, lessonId, savedW
 
   const handleProgressClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!audioRef.current) return;
-    const bar = e.currentTarget;
-    const pct = (e.clientX - bar.getBoundingClientRect().left) / bar.offsetWidth;
-    audioRef.current.currentTime = pct * (audioRef.current.duration || 0);
+    const { duration } = audioRef.current;
+    if (!duration || !isFinite(duration)) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+    audioRef.current.currentTime = pct * duration;
   };
 
   return (
