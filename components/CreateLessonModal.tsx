@@ -30,6 +30,7 @@ export default function CreateLessonModal({ onClose, onCreated }: Props) {
 
   // Story generation state
   const [provider, setProvider] = useState<'gemini' | 'ollama'>('gemini');
+  const [ttsProvider, setTtsProvider] = useState<'piper' | 'gemini'>('gemini');
   const [storyContent, setStoryContent] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -97,6 +98,7 @@ export default function CreateLessonModal({ onClose, onCreated }: Props) {
         themeWords,
         storyContent: storyContent || undefined,
         provider,
+        ttsProvider,
       });
       onClose();
       onCreated?.();
@@ -157,10 +159,10 @@ export default function CreateLessonModal({ onClose, onCreated }: Props) {
             </select>
           </div>
 
-          {/* Modelo de IA */}
+          {/* Modelo de IA — história */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Modelo de IA
+              Modelo de IA <span className="text-gray-400 font-normal">(história)</span>
             </label>
             <select
               value={provider}
@@ -176,6 +178,26 @@ export default function CreateLessonModal({ onClose, onCreated }: Props) {
                 <a href="/settings" className="text-blue-500 hover:underline">Configurações</a>.
               </p>
             )}
+          </div>
+
+          {/* Modelo de TTS — áudio */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Modelo de voz <span className="text-gray-400 font-normal">(áudio)</span>
+            </label>
+            <select
+              value={ttsProvider}
+              onChange={(e) => setTtsProvider(e.target.value as 'piper' | 'gemini')}
+              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition bg-white"
+            >
+              <option value="gemini">Gemini 2.5 Flash TTS (recomendado)</option>
+              <option value="piper">Piper (local, mais lento)</option>
+            </select>
+            <p className="mt-1.5 text-xs text-gray-400">
+              {ttsProvider === 'gemini'
+                ? 'Usa a mesma chave Gemini configurada em Configurações. Rápido e natural.'
+                : 'Gera o áudio localmente no servidor. Não requer chave de API.'}
+            </p>
           </div>
 
           {/* Palavras-tema */}

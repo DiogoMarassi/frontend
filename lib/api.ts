@@ -109,6 +109,7 @@ export async function createLesson(data: {
   themeWords: string[];
   storyContent?: string;
   provider?: 'gemini' | 'ollama';
+  ttsProvider?: 'piper' | 'gemini';
 }): Promise<Lesson> {
   const res = await fetch(`${API_URL}/lessons`, {
     ...defaults,
