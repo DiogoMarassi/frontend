@@ -69,6 +69,8 @@ export default function LessonList({ lessons, onCreated, onDeleted }: { lessons:
             title={lesson.title}
             level={lesson.level}
             createdAt={lesson.createdAt}
+            status={lesson.status}
+            errorMessage={lesson.errorMessage}
             cardStats={lesson.cardStats}
             onDeleted={onDeleted}
           />

@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { deleteLesson } from '../lib/api';
-import { ChevronRight, LayoutGrid, X } from 'lucide-react';
+import { ChevronRight, LayoutGrid, X, Loader2, AlertCircle } from 'lucide-react';
 import { useConfirm } from '../hooks/useConfirm';
 
 interface LessonCardProps {
@@ -12,6 +12,8 @@ interface LessonCardProps {
   title: string;
   level: string | null;
   createdAt: string;
+  status?: 'PENDING' | 'READY' | 'ERROR';
+  errorMessage?: string | null;
   cardStats?: { total: number; learned: number };
   onDeleted?: (id: string) => void;
 }
@@ -49,7 +51,7 @@ function CardStatusDot({ stats }: { stats?: { total: number; learned: number } }
   return <span className="w-2 h-2 rounded-full bg-blue-300 flex-shrink-0" title="Em andamento" />;
 }
 
-export default function LessonCard({ id, title, level, createdAt, cardStats, onDeleted }: LessonCardProps) {
+export default function LessonCard({ id, title, level, createdAt, status = 'READY', errorMessage, cardStats, onDeleted }: LessonCardProps) {
   const router = useRouter();
   const [deleting, setDeleting] = useState(false);
   const { confirm, ConfirmDialog } = useConfirm();
@@ -70,56 +72,97 @@ export default function LessonCard({ id, title, level, createdAt, cardStats, onD
   }
 
   const dateBadge = getDateBadge(createdAt);
+  const isPending = status === 'PENDING';
+  const isError = status === 'ERROR';
 
   return (
     <>
     {ConfirmDialog}
     <div className="relative group flex gap-2">
-      {dateBadge && (
+      {dateBadge && !isPending && !isError && (
         <div className={`flex items-center justify-center border rounded-xl shadow-sm text-xs font-semibold w-[90px] flex-shrink-0 text-center leading-tight px-2 ${dateBadge.style}`}>
           {dateBadge.label}
         </div>
       )}
-      <Link href={`/lesson/${id}`} className="flex-1">
-        <div className="p-5 bg-white rounded-xl shadow-sm hover:shadow-md transition border border-gray-100 cursor-pointer">
-          <div className="flex items-center gap-4">
+
+      {isPending ? (
+        <div className="flex-1 p-5 bg-gray-50 rounded-xl border border-gray-200 border-dashed">
+          <div className="flex items-center gap-3">
+            <Loader2 className="w-4 h-4 text-blue-400 animate-spin flex-shrink-0" />
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
-                <h3 className="font-semibold text-gray-800">{title}</h3>
+                <h3 className="font-semibold text-gray-500">{title}</h3>
+                {level && (
+                  <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${LEVEL_COLORS[level] ?? 'bg-gray-100 text-gray-600'} opacity-60`}>
+                    {level}
+                  </span>
+                )}
+              </div>
+              <p className="text-xs text-blue-400 mt-0.5">Gerando áudio e vocabulário...</p>
+            </div>
+          </div>
+        </div>
+      ) : isError ? (
+        <div className="flex-1 p-5 bg-red-50 rounded-xl border border-red-200">
+          <div className="flex items-center gap-3">
+            <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0" />
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h3 className="font-semibold text-gray-700">{title}</h3>
                 {level && (
                   <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${LEVEL_COLORS[level] ?? 'bg-gray-100 text-gray-600'}`}>
                     {level}
                   </span>
                 )}
               </div>
-              <div className="flex items-center gap-1.5 mt-0.5">
-                <CardStatusDot stats={cardStats} />
-                <p className="text-xs text-gray-400">
-                  {new Date(createdAt).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' })}
-                  {cardStats && cardStats.total > 0 && cardStats.learned === cardStats.total && (
-                    <span className="ml-2 text-emerald-500 font-medium">Concluída</span>
-                  )}
-                  {cardStats && cardStats.total > 0 && cardStats.learned < cardStats.total && (
-                    <span className="ml-2 text-blue-400 font-medium">Revise os cards</span>
-                  )}
-                  {cardStats && cardStats.total === 0 && (
-                    <span className="ml-2 text-gray-400">Sem palavras salvas</span>
-                  )}
-                </p>
-              </div>
+              <p className="text-xs text-red-400 mt-0.5">Falha ao processar lição</p>
             </div>
-            <ChevronRight className="w-5 h-5 text-gray-300 flex-shrink-0" />
           </div>
         </div>
-      </Link>
+      ) : (
+        <Link href={`/lesson/${id}`} className="flex-1">
+          <div className="p-5 bg-white rounded-xl shadow-sm hover:shadow-md transition border border-gray-100 cursor-pointer">
+            <div className="flex items-center gap-4">
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h3 className="font-semibold text-gray-800">{title}</h3>
+                  {level && (
+                    <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${LEVEL_COLORS[level] ?? 'bg-gray-100 text-gray-600'}`}>
+                      {level}
+                    </span>
+                  )}
+                </div>
+                <div className="flex items-center gap-1.5 mt-0.5">
+                  <CardStatusDot stats={cardStats} />
+                  <p className="text-xs text-gray-400">
+                    {new Date(createdAt).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' })}
+                    {cardStats && cardStats.total > 0 && cardStats.learned === cardStats.total && (
+                      <span className="ml-2 text-emerald-500 font-medium">Concluída</span>
+                    )}
+                    {cardStats && cardStats.total > 0 && cardStats.learned < cardStats.total && (
+                      <span className="ml-2 text-blue-400 font-medium">Revise os cards</span>
+                    )}
+                    {cardStats && cardStats.total === 0 && (
+                      <span className="ml-2 text-gray-400">Sem palavras salvas</span>
+                    )}
+                  </p>
+                </div>
+              </div>
+              <ChevronRight className="w-5 h-5 text-gray-300 flex-shrink-0" />
+            </div>
+          </div>
+        </Link>
+      )}
 
-      <Link
-        href={`/lesson/${id}/cards`}
-        className="flex flex-col items-center justify-center gap-1 px-4 bg-white border border-gray-100 rounded-xl shadow-sm hover:shadow-md hover:border-blue-200 hover:bg-blue-50 transition text-gray-500 hover:text-blue-600 min-w-[70px]"
-      >
-        <LayoutGrid className="w-5 h-5" />
-        <span className="text-xs font-medium">Cards</span>
-      </Link>
+      {!isPending && (
+        <Link
+          href={`/lesson/${id}/cards`}
+          className={`flex flex-col items-center justify-center gap-1 px-4 bg-white border border-gray-100 rounded-xl shadow-sm transition min-w-[70px] ${isError ? 'opacity-40 pointer-events-none' : 'hover:shadow-md hover:border-blue-200 hover:bg-blue-50 text-gray-500 hover:text-blue-600'}`}
+        >
+          <LayoutGrid className="w-5 h-5" />
+          <span className="text-xs font-medium">Cards</span>
+        </Link>
+      )}
 
       <button
         onClick={handleDelete}

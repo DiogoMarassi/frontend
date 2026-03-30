@@ -29,6 +29,8 @@ export interface Lesson {
   level: string | null;
   themeWords: string[];
   createdAt: string;
+  status: 'PENDING' | 'READY' | 'ERROR';
+  errorMessage?: string | null;
   story: Story | null;
   cardStats?: { total: number; learned: number };
 }
