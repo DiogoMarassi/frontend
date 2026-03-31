@@ -1,28 +1,54 @@
 'use client';
 
 import { useState } from 'react';
-import { markCardLearned, unmarkCardLearned, markCardLearnedGlobal, unmarkCardLearnedGlobal, type Card } from '../lib/api';
-import { Trophy, LayoutGrid, Check, Undo2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { markCardLearned, unmarkCardLearned, markCardLearnedGlobal, unmarkCardLearnedGlobal, deleteVocabularyWord, type Card } from '../lib/api';
+import { Trophy, LayoutGrid, Check, Undo2, ChevronLeft, ChevronRight, X } from 'lucide-react';
 
 interface Props {
   cards: Card[];
+  onRemove?: (vocabularyId: string) => void;
 }
 
 function FlashCard({
   card,
   side,
+  onRemove,
 }: {
   card: Card;
   side: 'learning' | 'learned';
+  onRemove?: (vocabularyId: string) => void;
 }) {
   const [flipped, setFlipped] = useState(false);
+  const [removing, setRemoving] = useState(false);
+
+  async function handleRemove(e: React.MouseEvent) {
+    e.stopPropagation();
+    if (removing) return;
+    setRemoving(true);
+    try {
+      await deleteVocabularyWord(card.vocabularyId);
+      onRemove?.(card.vocabularyId);
+    } finally {
+      setRemoving(false);
+    }
+  }
 
   return (
     <div
-      className="w-full h-52 cursor-pointer"
+      className="w-full h-52 cursor-pointer relative"
       style={{ perspective: '1000px' }}
       onClick={() => setFlipped((f) => !f)}
     >
+      {onRemove && (
+        <button
+          onClick={handleRemove}
+          disabled={removing}
+          className="absolute top-2 right-2 z-10 w-6 h-6 flex items-center justify-center rounded-full bg-gray-100 hover:bg-red-100 text-gray-400 hover:text-red-500 transition disabled:opacity-40"
+          title="Remover palavra"
+        >
+          <X className="w-3.5 h-3.5" />
+        </button>
+      )}
       <div
         className="relative w-full h-full transition-transform duration-500"
         style={{
@@ -68,12 +94,14 @@ function CardQueue({
   side,
   onMarkLearned,
   onUnmarkLearned,
+  onRemove,
 }: {
   title: string;
   cards: Card[];
   side: 'learning' | 'learned';
   onMarkLearned?: (id: string) => void;
   onUnmarkLearned?: (id: string) => void;
+  onRemove?: (vocabularyId: string) => void;
 }) {
   const [index, setIndex] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -132,7 +160,7 @@ function CardQueue({
 
       {/* Card ou empty state */}
       {current ? (
-        <FlashCard card={current} side={side} />
+        <FlashCard card={current} side={side} onRemove={onRemove} />
       ) : (
         <div className={`w-full h-52 rounded-2xl border-2 border-dashed flex flex-col items-center justify-center text-center px-6 ${side === 'learned' ? 'border-emerald-100 text-emerald-300' : 'border-gray-100 text-gray-300'
           }`}>
@@ -186,7 +214,7 @@ function CardQueue({
   );
 }
 
-export default function FlashCardGrid({ cards: initial }: Props) {
+export default function FlashCardGrid({ cards: initial, onRemove: onRemoveExternal }: Props) {
   const [cards, setCards] = useState(initial);
 
   const learning = cards.filter((c) => !c.learned);
@@ -200,6 +228,11 @@ export default function FlashCardGrid({ cards: initial }: Props) {
     setCards((prev) => prev.map((c) => (c.id === id ? { ...c, learned: false } : c)));
   }
 
+  function handleRemove(vocabularyId: string) {
+    setCards((prev) => prev.filter((c) => c.vocabularyId !== vocabularyId));
+    onRemoveExternal?.(vocabularyId);
+  }
+
   return (
     <div>
       <div className="grid grid-cols-2 gap-30">
@@ -208,15 +241,16 @@ export default function FlashCardGrid({ cards: initial }: Props) {
           cards={learning}
           side="learning"
           onMarkLearned={handleMarkLearned}
+          onRemove={handleRemove}
         />
         <CardQueue
           title="Aprendidas"
           cards={learned}
           side="learned"
           onUnmarkLearned={handleUnmarkLearned}
+          onRemove={handleRemove}
         />
       </div>
     </div>
-
   );
 }

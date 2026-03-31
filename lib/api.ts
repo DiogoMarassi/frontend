@@ -147,6 +147,7 @@ export async function getLesson(id: string, jwt?: string): Promise<Lesson> {
 
 export interface Card {
   id: string;
+  vocabularyId: string;
   lessonId: string;
   lessonTitle: string;
   savedAt: string;

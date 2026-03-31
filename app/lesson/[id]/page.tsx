@@ -8,7 +8,7 @@ import MiniTranslator from '../../../components/MiniTranslator';
 import AuthGuard from '../../../components/AuthGuard';
 import { LessonPageSkeleton } from '../../../components/Skeleton';
 import Link from 'next/link';
-import { ArrowLeft, Sparkles } from 'lucide-react';
+import { ArrowLeft, Sparkles, LayoutGrid } from 'lucide-react';
 
 const LEVEL_COLORS: Record<string, string> = {
   A1: 'bg-green-100 text-green-700',
@@ -42,9 +42,17 @@ function LessonContent() {
 
   return (
     <main className="max-w-5xl mx-auto px-4 py-10">
-      <Link href="/" className="inline-flex items-center gap-1 text-blue-500 hover:underline text-sm mb-6">
-        <ArrowLeft className="w-4 h-4" /> Voltar para lições
-      </Link>
+      <div className="flex items-center justify-between mb-6">
+        <Link href="/" className="inline-flex items-center gap-1 text-blue-500 hover:underline text-sm">
+          <ArrowLeft className="w-4 h-4" /> Voltar para lições
+        </Link>
+        <Link
+          href={`/lesson/${id}/cards`}
+          className="inline-flex items-center gap-1.5 text-sm font-medium text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition"
+        >
+          <LayoutGrid className="w-4 h-4" /> Ver cards
+        </Link>
+      </div>
       <div className="mb-6">
         <div className="flex items-center gap-3 flex-wrap mb-1">
           <h1 className="text-2xl font-bold text-gray-900">{lesson.title}</h1>
