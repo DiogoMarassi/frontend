@@ -1,51 +1,57 @@
-name: CI/CD Pipeline - Frontend Next.js
+name: CI/CD Pipeline - frontend Node.js
 
 on:
   push:
     branches:
-      - master # ou master
+      - master # ou master, dependendo do padrão do seu repositório
 
 jobs:
   # 1. Análise de Qualidade com SonarQube
   sonarcloud:
     name: SonarQube Analysis
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
       - name: Checkout do código
+        # Pinado na versão v4.2.2
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 
         with:
           fetch-depth: 0
 
       - name: SonarCloud Scan
-        uses: SonarSource/sonarqube-scan-action@c7ee0f9
+        uses: SonarSource/sonarqube-scan-action@fd88b7d7ccbaefd23d8f36f73b59db7a3d246602
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }} 
-
-  # 2. Deploy na AWS EC2
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args: >
+            -Dsonar.projectKey=DiogoMarassi_frontend
+            -Dsonar.organization=diogomarassi
+            -Dsonar.sources=.
+            -Dsonar.exclusions=node_modules/**
+  # 2. Deploy na AWS EC2 (Só roda se o Sonar passar)
   deploy:
     name: Deploy to EC2
     needs: sonarcloud
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
-      - name: Executar comandos na EC2 via SSH
-        uses: appleboy/ssh-action@7eaf76671a0d7eefa9d09c529005ea0b5a374c29 
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ubuntu
-          key: ${{ secrets.EC2_SSH_KEY }}
-          script: |
-            # 1. Entra na pasta do seu projeto front-end
-            cd /var/www/front/NOME_DA_SUA_PASTA
+      - name: Deploy na EC2 sem ssh (via runner)
+        # Pinado na versão v1.0.3 em vez de @master
+        run: |
+            # 1. Entra na pasta do seu projeto (Lembre-se de ajustar o nome abaixo!)
+            cd /home/ubuntu/lingua/frontend
             
             # 2. Puxa as novidades do GitHub
-            git pull origin main
+            git pull origin master
             
-            # 3. Instala pacotes novos
+            # 3. Instala pacotes novos e sincroniza o banco
             npm install
+            npx prisma generate
+            npx prisma db push
             
-            # 4. Refaz o build otimizado do Next.js
+            # 4. Refaz o build do NestJS com o código novo
             npm run build
             
-            # 5. Reinicia o front-end no PM2
-            pm2 restart frontend-web
+            # 5. Reinicia a API no PM2
+            pm2 restart frontend-web || pm2 start dist/main.js --name "frontend-web"
+
+            pm2 save
