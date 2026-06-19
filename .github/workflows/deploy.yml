@@ -44,7 +44,7 @@ jobs:
             git pull origin master
             
             # 3. Instala pacotes novos e sincroniza o banco
-            npm install
+            npm install --ignore-scripts --frozen-lockfile
             
             # 4. Refaz o build do NestJS com o código novo
             npm run build
