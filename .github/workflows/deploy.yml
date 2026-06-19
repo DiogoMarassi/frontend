@@ -52,6 +52,6 @@ jobs:
             npm run build
             
             # 5. Reinicia a API no PM2
-            pm2 restart frontend-web || pm2 start dist/main.js --name "frontend-web"
+            pm2 restart frontend-web || pm2 start dist/main.js --name "frontend-app"
 
             pm2 save
