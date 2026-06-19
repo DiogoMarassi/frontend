@@ -33,7 +33,7 @@ export default function LoginPage() {
     <main className="min-h-[calc(100vh-56px)] bg-gray-50 flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <p className="text-gray-500 mt-1 text-sm">Entre para iniciar seu aprendizado</p>
+          <p className="text-gray-500 mt-1 text-sm">Entre para iniciar seu ótimo aprendizado</p>
         </div>
 
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
