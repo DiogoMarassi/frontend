@@ -1,0 +1,51 @@
+name: CI/CD Pipeline - Frontend Next.js
+
+on:
+  push:
+    branches:
+      - main # ou master
+
+jobs:
+  # 1. Análise de Qualidade com SonarQube
+  sonarcloud:
+    name: SonarQube Analysis
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 
+        with:
+          fetch-depth: 0
+
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@381f152560a9fda2634d241d4a034e5a9111f148 
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }} 
+
+  # 2. Deploy na AWS EC2
+  deploy:
+    name: Deploy to EC2
+    needs: sonarcloud
+    runs-on: ubuntu-latest
+    steps:
+      - name: Executar comandos na EC2 via SSH
+        uses: appleboy/ssh-action@7eaf76671a0d7eefa9d09c529005ea0b5a374c29 
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            # 1. Entra na pasta do seu projeto front-end
+            cd /var/www/front/NOME_DA_SUA_PASTA
+            
+            # 2. Puxa as novidades do GitHub
+            git pull origin main
+            
+            # 3. Instala pacotes novos
+            npm install
+            
+            # 4. Refaz o build otimizado do Next.js
+            npm run build
+            
+            # 5. Reinicia o front-end no PM2
+            pm2 restart frontend-web
