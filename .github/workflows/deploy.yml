@@ -3,7 +3,7 @@ name: CI/CD Pipeline - Frontend Next.js
 on:
   push:
     branches:
-      - main # ou master
+      - master # ou master
 
 jobs:
   # 1. Análise de Qualidade com SonarQube
